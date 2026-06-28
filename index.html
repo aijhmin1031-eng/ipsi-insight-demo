@@ -6,6 +6,7 @@
 <title>입시 인사이트 — 공공데이터 기반 (데모)</title>
 <link rel="stylesheet" as="style" crossorigin
   href="https://cdn.jsdelivr.net/gh/orioncactus/pretendard@v1.3.9/dist/web/variable/pretendardvariable.css">
+<script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.1/dist/chart.umd.min.js"></script>
 <style>
 :root{--bg:#eef1f5;--paper:#fff;--ink:#1b2430;--sub:#5b636d;--line:#e1e6ec;--navy:#15335e;--navy2:#23477b;--tint:#f3f7fc;--ok:#2f6b4c;--hot:#b3261e;--sans:"Pretendard Variable",Pretendard,"Malgun Gothic",sans-serif;}
 *{box-sizing:border-box}body{margin:0;background:var(--bg);color:var(--ink);font-family:var(--sans);line-height:1.5;word-break:keep-all}
@@ -24,6 +25,7 @@ nav button.on{background:var(--navy);color:#fff}
 .card h2{margin:0 0 10px;font-size:16px;color:var(--navy);font-weight:800}
 .row{display:flex;gap:8px;flex-wrap:wrap;margin-bottom:10px;align-items:center}
 input{font-family:inherit;font-size:14px;padding:10px 12px;border:1px solid var(--line);border-radius:9px;background:#fff;flex:1;min-width:160px}
+select{font-family:inherit;font-size:14px;padding:9px 10px;border:1px solid var(--line);border-radius:9px;background:#fff}
 button.go{background:var(--navy);color:#fff;border:0;border-radius:9px;padding:9px 14px;font-weight:700;cursor:pointer;font-family:inherit;font-size:13.5px}
 button.gh{background:#23477b}
 table{width:100%;border-collapse:collapse;font-size:13px}
@@ -50,13 +52,27 @@ tbody tr:nth-child(even){background:#fafbfc}
   <div id="loading">데이터 불러오는 중… (최초 1회, 약 16MB)</div>
   <div id="app" class="hide">
   <nav>
-    <button data-t="jeon" class="on">전문대 합격선</button>
+    <button data-t="metric" class="on">대학 지표 분석</button>
+    <button data-t="jeon">전문대 합격선</button>
     <button data-t="major">학과</button>
     <button data-t="rate">대학 경쟁률</button>
     <button data-t="about">소개</button>
   </nav>
 
-  <section id="jeon"><div class="card">
+  <section id="metric"><div class="card">
+    <h2>대학 지표 분석 <span class="muted" style="font-weight:500">지역·설립 교차분석 · 신입생 충원율/등록률 (2024·2025)</span></h2>
+    <div class="row">
+      <select id="m_ind" onchange="renderMetric()" style="flex:0 1 190px"><option value="신입생충원율">신입생 충원율</option><option value="입학전형최종등록률">입학전형 최종등록률</option></select>
+      <select id="m_yr" onchange="renderMetric()" style="flex:0 1 100px"><option value="2025">2025</option><option value="2024">2024</option></select>
+      <select id="m_ord" onchange="renderMetric()" style="flex:0 1 120px"><option value="asc">낮은순</option><option value="desc">높은순</option></select>
+      <input type="text" id="metric_q" placeholder="🔎 대학·지역 필터">
+    </div>
+    <div id="m_agg" class="muted"></div>
+    <div style="max-width:680px;height:420px;margin:6px auto 16px"><canvas id="m_chart"></canvas></div>
+    <div id="metric_res"></div>
+  </div></section>
+
+  <section id="jeon" class="hide"><div class="card">
     <h2>전문대 합격선 <span class="muted" style="font-weight:500">학과별 합격자 평균/최저 성적 · 3개년 · 38,491건</span></h2>
     <div class="row"><input type="text" id="jeon_q" placeholder="🔎 대학·학과명으로 필터 (예: 간호, 영남이공)"><button class="go gh" onclick="doJeonTrend()">합격선 추세</button></div>
     <div class="row diag"><b style="color:var(--navy);font-size:13px">🎯 내 합격가능 진단</b><input type="text" id="jg" placeholder="학생부 등급 (예: 4.5)" style="max-width:150px;flex:0 1 150px"><input type="text" id="jmq" placeholder="학과 키워드(선택)" style="max-width:160px;flex:0 1 160px"><button class="go" onclick="doJeonMatch()">합격 가능 학과</button><button class="go" style="background:#5b636d" onclick="BOARDS.jeon.filter(document.getElementById('jeon_q').value.trim())">목록으로</button></div>
@@ -85,7 +101,7 @@ tbody tr:nth-child(even){background:#fafbfc}
 
 <script>
 const $=s=>document.querySelector(s);
-let UNIV=[],RATE=[],MAJOR=[],JEON=[],STAT={};
+let UNIV=[],RATE=[],MAJOR=[],JEON=[],METRIC=[],STAT={};
 const PAGE=50, BOARDS={};
 const grade=v=>(!v||v==='0')?'<span class="muted" style="margin:0">미공개</span>':v;
 const td=c=>'<td>'+c+'</td>';
@@ -109,8 +125,8 @@ function makeBoard(id, all, head, rowFn, filtFn){
   b.render(); return b;
 }
 
-Promise.all(['univ','rate','major','jeon','stat'].map(n=>fetch('data/'+n+'.json').then(r=>r.json())))
- .then(function(a){UNIV=a[0];RATE=a[1];MAJOR=a[2];JEON=a[3];STAT=a[4];init();})
+Promise.all(['univ','rate','major','jeon','metric','stat'].map(n=>fetch('data/'+n+'.json').then(r=>r.json())))
+ .then(function(a){UNIV=a[0];RATE=a[1];MAJOR=a[2];JEON=a[3];METRIC=a[4];STAT=a[5];init();})
  .catch(function(e){$('#loading').innerHTML='데이터 로드 실패: '+e;});
 
 function init(){
@@ -119,7 +135,8 @@ function init(){
     .map(function(x){return '<span class="chip"><b>'+x[1]+'</b> '+x[0]+'</span>';}).join('');
   document.querySelectorAll('nav button').forEach(function(btn){btn.onclick=function(){
     document.querySelectorAll('nav button').forEach(function(x){x.classList.toggle('on',x===btn);});
-    ['jeon','major','rate','about'].forEach(function(id){$('#'+id).classList.toggle('hide',id!==btn.dataset.t);});};});
+    ['metric','jeon','major','rate','about'].forEach(function(id){$('#'+id).classList.toggle('hide',id!==btn.dataset.t);});};});
+  renderMetric();
   // 게시판 3종
   makeBoard('jeon', JEON, ['연도','대학','학과','모집','전형','경쟁률','평균(학생부)','최저(학생부)','평균(수능)','최저(수능)'],
     function(r){return [r.yr,r.univ,r.major,r.phase,r.typ,(r.rate&&r.rate!=='0')?r.rate:'-',grade(r.avgH),grade(r.lowH),grade(r.avgS),grade(r.lowS)];},
@@ -132,6 +149,24 @@ function init(){
     function(r,q){return r.name.indexOf(q)>=0;});
 }
 
+let mchart=null;
+function estbGroup(e){return (e&&(e.indexOf('국')>=0||e.indexOf('공')>=0))?'국공립':'사립';}
+function renderMetric(){
+  const ind=$('#m_ind').value, yr=$('#m_yr').value, ord=$('#m_ord').value, unit='%';
+  let list=[];
+  for(const r of METRIC){if(r.ind!==ind||r.yr!==yr)continue;const v=parseFloat(r.v);if(isNaN(v))continue;list.push({univ:r.univ,zone:r.zone,estb:r.estb,val:v});}
+  const sum=function(a){return a.reduce(function(x,y){return x+y;},0);}, avg=function(a){return a.length?sum(a)/a.length:0;};
+  const zg={};list.forEach(function(r){(zg[r.zone]=zg[r.zone]||[]).push(r.val);});
+  let zoneAvg=Object.keys(zg).map(function(k){return {k:k,avg:avg(zg[k])};});zoneAvg.sort(function(a,b){return a.avg-b.avg;});
+  const eg={국공립:[],사립:[]};list.forEach(function(r){eg[estbGroup(r.estb)].push(r.val);});
+  $('#m_agg').innerHTML='전국 평균 <b>'+avg(list.map(function(r){return r.val;})).toFixed(1)+unit+'</b> · 국공립 <b style="color:#23477b">'+avg(eg.국공립).toFixed(1)+unit+'</b> · 사립 <b style="color:#b3261e">'+avg(eg.사립).toFixed(1)+unit+'</b> · 대상 '+list.length+'개교';
+  if(mchart)mchart.destroy();
+  mchart=new Chart($('#m_chart'),{type:'bar',data:{labels:zoneAvg.map(function(z){return z.k;}),datasets:[{label:ind,data:zoneAvg.map(function(z){return Math.round(z.avg*10)/10;}),backgroundColor:'#23477b'}]},options:{indexAxis:'y',responsive:true,maintainAspectRatio:false,plugins:{legend:{display:false},title:{display:true,text:ind+' · 지역별 평균 ('+yr+')'}},scales:{x:{beginAtZero:true}}}});
+  list.sort(function(a,b){return ord==='asc'?a.val-b.val:b.val-a.val;});
+  makeBoard('metric', list, ['대학','지역','설립',ind+'('+unit+')'],
+    function(r){return [r.univ,r.zone,'<span class="tag">'+r.estb+'</span>','<b>'+r.val+unit+'</b>'];},
+    function(r,q){return r.univ.indexOf(q)>=0||r.zone.indexOf(q)>=0;});
+}
 function mb(l){const c={'안정':'#2f6b4c','적정':'#23477b','소신':'#b3261e'}[l]||'#5b636d';return '<b style="color:'+c+'">'+l+'</b>';}
 function doJeonMatch(){const gv=$('#jg').value.trim();const g=parseFloat(gv);
   if(isNaN(g)){$('#jeon_res').innerHTML='<div class="muted">학생부 등급을 숫자로 입력하세요(예: 4.5).</div>';return;}
