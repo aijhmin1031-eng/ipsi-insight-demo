@@ -53,6 +53,7 @@ tbody tr:nth-child(even){background:#fafbfc}
   <div id="app" class="hide">
   <nav>
     <button data-t="metric" class="on">대학 지표 분석</button>
+    <button data-t="region">지역 분석(취업률)</button>
     <button data-t="jeon">전문대 합격선</button>
     <button data-t="major">학과</button>
     <button data-t="rate">대학 경쟁률</button>
@@ -62,7 +63,7 @@ tbody tr:nth-child(even){background:#fafbfc}
   <section id="metric"><div class="card">
     <h2>대학 지표 분석 <span class="muted" style="font-weight:500">지역·설립 교차분석 · 신입생 충원율/등록률 (2024·2025)</span></h2>
     <div class="row">
-      <select id="m_ind" onchange="renderMetric()" style="flex:0 1 190px"><option value="신입생충원율">신입생 충원율</option><option value="입학전형최종등록률">입학전형 최종등록률</option><option value="중도탈락현황">중도탈락률(안정성)</option></select>
+      <select id="m_ind" onchange="renderMetric()" style="flex:0 1 200px"><option value="종합안정성">⭐ 종합 안정성 점수</option><option value="신입생충원율">신입생 충원율</option><option value="입학전형최종등록률">입학전형 최종등록률</option><option value="중도탈락현황">중도탈락률</option></select>
       <select id="m_yr" onchange="renderMetric()" style="flex:0 1 100px"><option value="2025">2025</option><option value="2024">2024</option></select>
       <select id="m_ord" onchange="renderMetric()" style="flex:0 1 120px"><option value="asc">낮은순</option><option value="desc">높은순</option></select>
       <input type="text" id="metric_q" placeholder="🔎 대학·지역 필터">
@@ -70,6 +71,17 @@ tbody tr:nth-child(even){background:#fafbfc}
     <div id="m_agg" class="muted"></div>
     <div style="max-width:680px;height:420px;margin:6px auto 16px"><canvas id="m_chart"></canvas></div>
     <div id="metric_res"></div>
+  </div></section>
+
+  <section id="region" class="hide"><div class="card">
+    <h2>지역 분석 <span class="muted" style="font-weight:500">취업률·충원율·중도탈락 × 지역 × 학교종류 (2023~2025)</span></h2>
+    <div class="row">
+      <select id="rg_ind" onchange="renderRegion()" style="flex:0 1 160px"><option value="취업률">취업률</option><option value="신입생충원율">신입생 충원율</option><option value="중도탈락률">중도탈락률</option></select>
+      <select id="rg_div" onchange="renderRegion()" style="flex:0 1 120px"><option value="4년제">4년제</option><option value="전문대">전문대</option></select>
+    </div>
+    <div id="rg_agg" class="muted"></div>
+    <div style="max-width:680px;height:420px;margin:6px auto 16px"><canvas id="rg_chart"></canvas></div>
+    <div id="rg_res"></div>
   </div></section>
 
   <section id="jeon" class="hide"><div class="card">
@@ -101,7 +113,7 @@ tbody tr:nth-child(even){background:#fafbfc}
 
 <script>
 const $=s=>document.querySelector(s);
-let UNIV=[],RATE=[],MAJOR=[],JEON=[],METRIC=[],STAT={};
+let UNIV=[],RATE=[],MAJOR=[],JEON=[],METRIC=[],REGION=[],STAT={};
 const PAGE=50, BOARDS={};
 const grade=v=>(!v||v==='0')?'<span class="muted" style="margin:0">미공개</span>':v;
 const td=c=>'<td>'+c+'</td>';
@@ -125,8 +137,8 @@ function makeBoard(id, all, head, rowFn, filtFn){
   b.render(); return b;
 }
 
-Promise.all(['univ','rate','major','jeon','metric','stat'].map(n=>fetch('data/'+n+'.json').then(r=>r.json())))
- .then(function(a){UNIV=a[0];RATE=a[1];MAJOR=a[2];JEON=a[3];METRIC=a[4];STAT=a[5];init();})
+Promise.all(['univ','rate','major','jeon','metric','region','stat'].map(n=>fetch('data/'+n+'.json').then(r=>r.json())))
+ .then(function(a){UNIV=a[0];RATE=a[1];MAJOR=a[2];JEON=a[3];METRIC=a[4];REGION=a[5];STAT=a[6];init();})
  .catch(function(e){$('#loading').innerHTML='데이터 로드 실패: '+e;});
 
 function init(){
@@ -135,7 +147,8 @@ function init(){
     .map(function(x){return '<span class="chip"><b>'+x[1]+'</b> '+x[0]+'</span>';}).join('');
   document.querySelectorAll('nav button').forEach(function(btn){btn.onclick=function(){
     document.querySelectorAll('nav button').forEach(function(x){x.classList.toggle('on',x===btn);});
-    ['metric','jeon','major','rate','about'].forEach(function(id){$('#'+id).classList.toggle('hide',id!==btn.dataset.t);});};});
+    ['metric','region','jeon','major','rate','about'].forEach(function(id){$('#'+id).classList.toggle('hide',id!==btn.dataset.t);});
+    if(btn.dataset.t==='region'&&!window._rgLoaded){window._rgLoaded=1;renderRegion();}};});
   renderMetric();
   // 게시판 3종
   makeBoard('jeon', JEON, ['연도','대학','학과','모집','전형','경쟁률','평균(학생부)','최저(학생부)','평균(수능)','최저(수능)'],
@@ -154,10 +167,50 @@ function init(){
     function(r,q){return r.name.indexOf(q)>=0;});
 }
 
-let mchart=null;
+let mchart=null, rgchart=null;
 const M_LABEL={'신입생충원율':'신입생 충원율','입학전형최종등록률':'입학전형 최종등록률','중도탈락현황':'중도탈락률'};
 function estbGroup(e){return (e&&(e.indexOf('국')>=0||e.indexOf('공')>=0))?'국공립':'사립';}
+function avgOf(a){return a.length?a.reduce(function(x,y){return x+y;},0)/a.length:0;}
+
+// 종합 안정성 점수: 충원율40 + 등록률30 + (이탈 역점수)30 — 2025, 3지표 모두 공개 대학
+function stabilityList(){
+  const m={};
+  for(const r of METRIC){if(r.yr!=='2025')continue;const v=parseFloat(r.v);if(isNaN(v))continue;
+    if(!m[r.univ])m[r.univ]={univ:r.univ,zone:r.zone,estb:r.estb};m[r.univ][r.ind]=v;}
+  const out=[];
+  for(const u in m){const o=m[u];const ch=o['신입생충원율'],rg=o['입학전형최종등록률'],dr=o['중도탈락현황'];
+    if(ch==null||rg==null||dr==null)continue;
+    const ret=100-Math.min(dr*3,100);
+    out.push({univ:o.univ,zone:o.zone,estb:o.estb,val:Math.round((ch*0.4+rg*0.3+ret*0.3)*10)/10,ch:ch,rg:rg,dr:dr});}
+  return out;
+}
+function renderStability(){
+  $('#m_yr').value='2025';const ord=$('#m_ord').value;let list=stabilityList();
+  const zg={};list.forEach(function(r){(zg[r.zone]=zg[r.zone]||[]).push(r.val);});
+  let zoneAvg=Object.keys(zg).map(function(k){return {k:k,avg:avgOf(zg[k])};}).sort(function(a,b){return b.avg-a.avg;});
+  const eg={국공립:[],사립:[]};list.forEach(function(r){eg[estbGroup(r.estb)].push(r.val);});
+  $('#m_agg').innerHTML='종합 안정성=충원율·40 + 등록률·30 + 이탈역점수·30 · 전국 <b>'+avgOf(list.map(function(r){return r.val;})).toFixed(1)+'점</b> · 국공립 <b style="color:#23477b">'+avgOf(eg.국공립).toFixed(1)+'</b> · 사립 <b style="color:#b3261e">'+avgOf(eg.사립).toFixed(1)+'</b> · 대상 '+list.length+'개교(3지표 공개)';
+  if(mchart)mchart.destroy();
+  mchart=new Chart($('#m_chart'),{type:'bar',data:{labels:zoneAvg.map(function(z){return z.k;}),datasets:[{label:'안정성',data:zoneAvg.map(function(z){return Math.round(z.avg*10)/10;}),backgroundColor:'#15335e'}]},options:{indexAxis:'y',responsive:true,maintainAspectRatio:false,plugins:{legend:{display:false},title:{display:true,text:'종합 안정성 점수 · 지역별 평균 (2025, 100점)'}},scales:{x:{beginAtZero:true,max:100}}}});
+  list.sort(function(a,b){return ord==='asc'?a.val-b.val:b.val-a.val;});
+  makeBoard('metric', list, ['대학','지역','설립','안정성','충원율','등록률','중도탈락'],
+    function(r){return [r.univ,r.zone,'<span class="tag">'+r.estb+'</span>','<b>'+r.val+'점</b>',r.ch+'%',r.rg+'%',r.dr+'%'];},
+    function(r,q){return r.univ.indexOf(q)>=0||r.zone.indexOf(q)>=0;});
+}
+function renderRegion(){
+  const ind=$('#rg_ind').value, div=$('#rg_div').value;
+  let rows=REGION.filter(function(r){return r.ind===ind&&r.div===div&&['전체','수도권','비수도권'].indexOf(r.zone)<0;})
+    .map(function(r){return {zone:r.zone,y23:r.y23,y24:r.y24,v:parseFloat(r.y25)};}).filter(function(r){return !isNaN(r.v);})
+    .sort(function(a,b){return b.v-a.v;});
+  const tot=REGION.find(function(r){return r.ind===ind&&r.div===div&&r.zone==='전체';});
+  $('#rg_agg').innerHTML=tot?('전국('+div+') '+ind+': 2023 '+tot.y23+'% → 2024 '+tot.y24+'% → <b>2025 '+tot.y25+'%</b>'):'';
+  if(rgchart)rgchart.destroy();
+  rgchart=new Chart($('#rg_chart'),{type:'bar',data:{labels:rows.map(function(r){return r.zone;}),datasets:[{label:ind,data:rows.map(function(r){return r.v;}),backgroundColor:'#2f6b4c'}]},options:{indexAxis:'y',responsive:true,maintainAspectRatio:false,plugins:{legend:{display:false},title:{display:true,text:ind+'('+div+') · 지역별 2025'}},scales:{x:{beginAtZero:true}}}});
+  $('#rg_res').innerHTML='<div style="overflow:auto"><table><tr><th>지역</th><th>2023</th><th>2024</th><th>2025</th></tr>'+
+    rows.map(function(r){return '<tr><td>'+r.zone+'</td><td>'+r.y23+'%</td><td>'+r.y24+'%</td><td><b>'+r.v+'%</b></td></tr>';}).join('')+'</table></div>';
+}
 function renderMetric(){
+  if($('#m_ind').value==='종합안정성'){renderStability();return;}
   const ind=$('#m_ind').value, ord=$('#m_ord').value, unit='%', lab=M_LABEL[ind]||ind;
   const yrs=Array.from(new Set(METRIC.filter(function(r){return r.ind===ind;}).map(function(r){return r.yr;}))).sort().reverse();
   let yr=$('#m_yr').value; if(yrs.indexOf(yr)<0){yr=yrs[0]; if(yr)$('#m_yr').value=yr;}
