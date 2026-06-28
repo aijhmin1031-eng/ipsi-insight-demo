@@ -1,0 +1,151 @@
+<!doctype html>
+<html lang="ko">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>입시 인사이트 — 공공데이터 기반 (데모)</title>
+<link rel="stylesheet" as="style" crossorigin
+  href="https://cdn.jsdelivr.net/gh/orioncactus/pretendard@v1.3.9/dist/web/variable/pretendardvariable.css">
+<style>
+:root{--bg:#eef1f5;--paper:#fff;--ink:#1b2430;--sub:#5b636d;--line:#e1e6ec;--navy:#15335e;--navy2:#23477b;--tint:#f3f7fc;--ok:#2f6b4c;--hot:#b3261e;--sans:"Pretendard Variable",Pretendard,"Malgun Gothic",sans-serif;}
+*{box-sizing:border-box}body{margin:0;background:var(--bg);color:var(--ink);font-family:var(--sans);line-height:1.55;word-break:keep-all}
+.wrap{max-width:1080px;margin:0 auto;padding:0 16px 60px}
+header{background:linear-gradient(120deg,#15335e,#23477b);color:#fff;padding:24px 0 18px;margin-bottom:16px}
+header .wrap{display:flex;flex-direction:column;gap:10px}
+h1{margin:0;font-size:22px;font-weight:800;letter-spacing:-.4px}
+h1 small{font-weight:500;opacity:.85;font-size:12.5px;margin-left:8px}
+.chips{display:flex;gap:8px;flex-wrap:wrap}
+.chip{background:rgba(255,255,255,.14);border:1px solid rgba(255,255,255,.25);border-radius:20px;padding:5px 13px;font-size:13px}
+.chip b{font-weight:800;font-size:15px}
+nav{display:flex;flex-wrap:wrap;gap:4px;background:var(--paper);border:1px solid var(--line);border-radius:12px;padding:5px;margin-bottom:16px;position:sticky;top:8px;z-index:5}
+nav button{flex:1 1 auto;border:0;background:transparent;padding:9px 12px;border-radius:8px;font-family:inherit;font-size:13.5px;font-weight:600;color:var(--sub);cursor:pointer;white-space:nowrap}
+nav button.on{background:var(--navy);color:#fff}
+.card{background:var(--paper);border:1px solid var(--line);border-radius:14px;padding:18px 20px;margin-bottom:16px}
+.card h2{margin:0 0 12px;font-size:16px;color:var(--navy);font-weight:800}
+.row{display:flex;gap:8px;flex-wrap:wrap;margin-bottom:12px}
+input,select{font-family:inherit;font-size:14px;padding:10px 12px;border:1px solid var(--line);border-radius:9px;background:#fff}
+input[type=text]{flex:1;min-width:160px}
+button.go{background:var(--navy);color:#fff;border:0;border-radius:9px;padding:10px 18px;font-weight:700;cursor:pointer;font-family:inherit}
+table{width:100%;border-collapse:collapse;font-size:13.5px}
+th,td{text-align:left;padding:9px 10px;border-bottom:1px solid var(--line);vertical-align:top}
+th{color:var(--sub);font-size:12px;font-weight:700;background:var(--tint)}
+.tag{display:inline-block;font-size:11px;padding:1px 7px;border-radius:11px;background:var(--tint);color:var(--navy2);border:1px solid var(--line)}
+.muted{color:var(--sub);font-size:12.5px}.hide{display:none}
+.note{font-size:12px;color:var(--sub);margin-top:8px}
+#loading{text-align:center;padding:40px;color:var(--sub)}
+</style>
+</head>
+<body>
+<header><div class="wrap">
+  <h1>입시 인사이트 <small>공공데이터(대교협·전문대협) 기반 · 라이브 데모</small></h1>
+  <div class="chips" id="chips"></div>
+</div></header>
+
+<div class="wrap">
+  <div id="loading">데이터 불러오는 중… (최초 1회, 약 16MB)</div>
+  <div id="app" class="hide">
+  <nav>
+    <button data-t="search" class="on">통합검색</button>
+    <button data-t="rate">대학별 경쟁률</button>
+    <button data-t="jeon">전문대 합격선</button>
+    <button data-t="about">소개</button>
+  </nav>
+
+  <section id="search"><div class="card">
+    <h2>통합검색 <span class="muted">(대학 + 학과)</span></h2>
+    <div class="row"><input type="text" id="sq" placeholder="대학·학과명 (예: 한양, 컴퓨터, 간호)"><button class="go" onclick="doSearch()">검색</button></div>
+    <div id="sres" class="muted">검색어를 입력하세요.</div>
+  </div></section>
+
+  <section id="rate" class="hide"><div class="card">
+    <h2>대학별 정원내 신입생 경쟁률 <span class="muted">(2024·2025)</span></h2>
+    <div class="row"><input type="text" id="rq" placeholder="대학명 (예: 성균관, 가천)"><button class="go" onclick="doRate()">조회</button></div>
+    <div id="rres" class="muted">대학명을 입력하세요.</div>
+  </div></section>
+
+  <section id="jeon" class="hide"><div class="card">
+    <h2>전문대 합격선 <span class="muted">(공식 전문대포털 · 학과별 합격자 성적 · 3개년)</span></h2>
+    <div class="row"><input type="text" id="jq" placeholder="대학·학과명 (예: 간호, 영남이공)"><button class="go" onclick="doJeon()">검색</button><button class="go" style="background:#23477b" onclick="doJeonTrend()">합격선 추세</button></div>
+    <div class="row" style="background:var(--tint);padding:8px 10px;border-radius:8px;align-items:center;gap:8px">
+      <b style="color:var(--navy)">🎯 내 합격가능 진단</b>
+      <input type="text" id="jg" placeholder="학생부 등급 (예: 4.5)" style="max-width:150px">
+      <input type="text" id="jmq" placeholder="학과 키워드(선택)" style="max-width:160px">
+      <button class="go" onclick="doJeonMatch()">합격 가능 학과</button>
+    </div>
+    <div id="jres" class="muted">검색하거나, 학생부 등급으로 합격 가능 학과를 진단하세요. (수시=학생부 등급(낮을수록 우수)·정시=수능 / 0·빈칸=미공개)</div>
+  </div></section>
+
+  <section id="about" class="hide"><div class="card">
+    <h2>소개</h2>
+    <p>공공데이터 기반 대입 정보 분석 데모입니다. 대입정보포털 「어디가」 대비 <b>입시 지표 종류·연도 이력·시각화·전문대 합격선/진단/추세</b>에서 차별화를 목표로 합니다.</p>
+    <p class="muted">데이터: 공공데이터포털(한국대학교육협의회)·전문대학포털(한국전문대학교육협의회). 본 데모는 핵심 기능 일부만 정적으로 제공합니다(전체 13개 뷰·자동 수집 파이프라인은 별도).<br>※ 합격선·학과별 경쟁률은 어디가의 제도적 비공개 데이터로 4년제는 미포함. 전문대는 공식 포털로 확보.</p>
+  </div></section>
+  </div>
+</div>
+
+<script>
+const $=s=>document.querySelector(s);
+let UNIV=[],RATE=[],MAJOR=[],JEON=[],STAT={};
+function tbl(head,rows){if(!rows.length)return '<div class="muted">결과 없음</div>';
+  return '<table><tr>'+head.map(h=>'<th>'+h+'</th>').join('')+'</tr>'+rows.map(r=>'<tr>'+r.map(c=>'<td>'+c+'</td>').join('')+'</tr>').join('')+'</table>';}
+const grade=v=>(!v||v==='0')?'<span class="muted">미공개</span>':v;
+
+Promise.all(['univ','rate','major','jeon','stat'].map(n=>fetch('data/'+n+'.json').then(r=>r.json())))
+ .then(([u,r,m,j,s])=>{UNIV=u;RATE=r;MAJOR=m;JEON=j;STAT=s;init();})
+ .catch(e=>{$('#loading').innerHTML='데이터 로드 실패: '+e;});
+
+function init(){
+  $('#loading').classList.add('hide');$('#app').classList.remove('hide');
+  $('#chips').innerHTML=[['대학',STAT.univ],['학과',(STAT.major||0).toLocaleString()],['대학 경쟁률',STAT.rate],['전문대 합격선',(STAT.jeon||0).toLocaleString()]]
+    .map(x=>'<span class="chip"><b>'+x[1]+'</b> '+x[0]+'</span>').join('');
+  document.querySelectorAll('nav button').forEach(b=>b.onclick=()=>{
+    document.querySelectorAll('nav button').forEach(x=>x.classList.toggle('on',x===b));
+    ['search','rate','jeon','about'].forEach(id=>$('#'+id).classList.toggle('hide',id!==b.dataset.t));});
+}
+
+function doSearch(){const s=$('#sq').value.trim();if(!s)return;
+  const us=UNIV.filter(u=>u.name.indexOf(s)>=0).slice(0,40);
+  const ms=MAJOR.filter(m=>m.school.indexOf(s)>=0||m.major.indexOf(s)>=0).slice(0,60);
+  let h='<h2 style="margin:6px 0">대학 '+us.length+'</h2>'+tbl(['대학','구분','설립','지역'],us.map(u=>[u.name,'<span class="tag">'+u.div+'</span>',u.estb,u.zone]));
+  h+='<h2 style="margin:16px 0 6px">학과 '+ms.length+'</h2>'+tbl(['대학','학과','학위','정원','계열'],ms.map(m=>[m.school,m.major,'<span class="tag">'+(m.degree||'')+'</span>',m.quota||'-',m.field||'']));
+  $('#sres').innerHTML=h;}
+
+function doRate(){const s=$('#rq').value.trim();if(!s)return;
+  const rs=RATE.filter(r=>r.name.indexOf(s)>=0).sort((a,b)=>a.name.localeCompare(b.name)||a.year.localeCompare(b.year));
+  $('#rres').innerHTML=tbl(['대학','구분','지역','연도','경쟁률'],rs.map(r=>[r.name,'<span class="tag">'+r.div+'</span>',r.zone,r.year,'<b>'+r.rate+':1</b>']));}
+
+function doJeon(){const s=$('#jq').value.trim();if(!s)return;
+  const rs=JEON.filter(r=>r.univ.indexOf(s)>=0||r.major.indexOf(s)>=0).slice(0,200);
+  $('#jres').innerHTML='<div class="muted">'+rs.length+'건 · 합격선=합격자 성적(평균/최저). 학생부=등급(낮을수록 우수), 수능=백분위. 0/빈칸=미공개</div>'+
+    tbl(['연도','대학','학과','모집','전형','경쟁률','평균(학생부)','최저(학생부)','평균(수능)','최저(수능)'],
+      rs.map(r=>[r.yr,r.univ,r.major,r.phase,r.typ,(r.rate&&r.rate!=='0')?r.rate:'-',grade(r.avgH),grade(r.lowH),grade(r.avgS),grade(r.lowS)]));}
+
+function mb(l){const c={'안정':'#2f6b4c','적정':'#23477b','소신':'#b3261e'}[l]||'#5b636d';return '<b style="color:'+c+'">'+l+'</b>';}
+function doJeonMatch(){const gv=$('#jg').value.trim();const g=parseFloat(gv);
+  if(isNaN(g)){$('#jres').innerHTML='<div class="muted">학생부 등급을 숫자로 입력하세요(예: 4.5).</div>';return;}
+  const kw=$('#jmq').value.trim();let out=[];
+  for(const r of JEON){if(!r.avgH||r.avgH==='0')continue;if(kw&&r.univ.indexOf(kw)<0&&r.major.indexOf(kw)<0)continue;
+    const avg=parseFloat(r.avgH);if(isNaN(avg))continue;let low=parseFloat(r.lowH);if(isNaN(low)||r.lowH==='0')low=avg;
+    let lab;if(g<=avg)lab='안정';else if(g<=low)lab='적정';else if(g<=low+0.5)lab='소신';else continue;
+    out.push({r:r,lab:lab,d:Math.abs(avg-g)});}
+  out.sort((a,b)=>a.d-b.d);out=out.slice(0,150);
+  if(!out.length){$('#jres').innerHTML='<div class="muted">해당 등급으로 합격 가능 학과를 찾지 못했습니다.</div>';return;}
+  const c={안정:0,적정:0,소신:0};out.forEach(x=>c[x.lab]++);
+  $('#jres').innerHTML='<div class="muted">내 학생부 '+gv+'등급 기준 '+out.length+'개 학과 · <b style="color:#2f6b4c">안정 '+c.안정+'</b> · <b style="color:#23477b">적정 '+c.적정+'</b> · <b style="color:#b3261e">소신 '+c.소신+'</b></div>'+
+    tbl(['판정','대학','학과','모집','경쟁률','합격평균','합격최저'],out.map(x=>[mb(x.lab),x.r.univ,x.r.major,x.r.phase,(x.r.rate&&x.r.rate!=='0')?x.r.rate:'-',x.r.avgH,grade(x.r.lowH)]));}
+
+function tb(l){const c=l.indexOf('기회')>=0?'#2f6b4c':(l.indexOf('주의')>=0?'#b3261e':'#5b636d');return '<b style="color:'+c+'">'+l+'</b>';}
+function doJeonTrend(){const s=$('#jq').value.trim();const g={};
+  for(const r of JEON){if(!r.avgH||r.avgH==='0')continue;if(s&&r.univ.indexOf(s)<0&&r.major.indexOf(s)<0)continue;
+    const k=r.univ+'|'+r.major+'|'+r.phase+'|'+r.typ;if(!g[k])g[k]={u:r.univ,m:r.major,ph:r.phase,y:{}};g[k].y[r.yr]=r.avgH;}
+  let out=[];for(const k in g){const ys=Object.keys(g[k].y).sort();if(ys.length<2)continue;
+    const chg=Math.round((parseFloat(g[k].y[ys[ys.length-1]])-parseFloat(g[k].y[ys[0]]))*100)/100;if(isNaN(chg))continue;
+    const lab=chg>=0.5?'합격선↓(기회)':(chg<=-0.5?'합격선↑(주의)':'유지');
+    out.push({u:g[k].u,m:g[k].m,ph:g[k].ph,y24:g[k].y['2024']||'',y25:g[k].y['2025']||'',y26:g[k].y['2026']||'',chg:chg,lab:lab});}
+  out.sort((a,b)=>b.chg-a.chg);out=out.slice(0,200);
+  if(!out.length){$('#jres').innerHTML='<div class="muted">다년 합격선 데이터가 없습니다(2개년 이상 공개 학과 필요).</div>';return;}
+  $('#jres').innerHTML='<div class="muted">'+out.length+'개 학과 · 합격선(학생부 평균) 2024→2026 변화. 등급↑=합격선 하락(기회), 등급↓=상승(주의)</div>'+
+    tbl(['추세','대학','학과','모집','2024','2025','2026'],out.map(r=>[tb(r.lab),r.u,r.m,r.ph,grade(r.y24),grade(r.y25),grade(r.y26)]));}
+</script>
+</body>
+</html>
