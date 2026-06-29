@@ -8,43 +8,57 @@
   href="https://cdn.jsdelivr.net/gh/orioncactus/pretendard@v1.3.9/dist/web/variable/pretendardvariable.css">
 <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.1/dist/chart.umd.min.js"></script>
 <style>
-:root{--bg:#eef1f5;--paper:#fff;--ink:#1b2430;--sub:#5b636d;--line:#e1e6ec;--navy:#15335e;--navy2:#23477b;--tint:#f3f7fc;--ok:#2f6b4c;--hot:#b3261e;--sans:"Pretendard Variable",Pretendard,"Malgun Gothic",sans-serif;}
-*{box-sizing:border-box}body{margin:0;background:var(--bg);color:var(--ink);font-family:var(--sans);line-height:1.5;word-break:keep-all}
-.wrap{max-width:1080px;margin:0 auto;padding:0 16px 60px}
-header{background:linear-gradient(120deg,#15335e,#23477b);color:#fff;padding:22px 0 16px;margin-bottom:14px}
-header .wrap{display:flex;flex-direction:column;gap:10px}
-h1{margin:0;font-size:21px;font-weight:800;letter-spacing:-.4px}
-h1 small{font-weight:500;opacity:.85;font-size:12px;margin-left:8px}
-.chips{display:flex;gap:8px;flex-wrap:wrap}
-.chip{background:rgba(255,255,255,.14);border:1px solid rgba(255,255,255,.25);border-radius:20px;padding:5px 12px;font-size:12.5px}
-.chip b{font-weight:800;font-size:14.5px}
-nav{display:flex;flex-wrap:wrap;gap:4px;background:var(--paper);border:1px solid var(--line);border-radius:12px;padding:5px;margin-bottom:14px;position:sticky;top:6px;z-index:5}
-nav button{flex:1 1 auto;border:0;background:transparent;padding:9px 12px;border-radius:8px;font-family:inherit;font-size:13.5px;font-weight:600;color:var(--sub);cursor:pointer;white-space:nowrap}
-nav button.on{background:var(--navy);color:#fff}
-.card{background:var(--paper);border:1px solid var(--line);border-radius:14px;padding:16px 18px;margin-bottom:14px}
-.card h2{margin:0 0 10px;font-size:16px;color:var(--navy);font-weight:800}
-.row{display:flex;gap:8px;flex-wrap:wrap;margin-bottom:10px;align-items:center}
-input{font-family:inherit;font-size:14px;padding:10px 12px;border:1px solid var(--line);border-radius:9px;background:#fff;flex:1;min-width:160px}
-select{font-family:inherit;font-size:14px;padding:9px 10px;border:1px solid var(--line);border-radius:9px;background:#fff}
-button.go{background:var(--navy);color:#fff;border:0;border-radius:9px;padding:9px 14px;font-weight:700;cursor:pointer;font-family:inherit;font-size:13.5px}
-button.gh{background:#23477b}
-table{width:100%;border-collapse:collapse;font-size:13px}
-th,td{text-align:left;padding:8px 9px;border-bottom:1px solid var(--line);vertical-align:top}
-th{color:var(--sub);font-size:11.5px;font-weight:700;background:var(--tint);position:sticky;top:0}
-tbody tr:nth-child(even){background:#fafbfc}
-.tag{display:inline-block;font-size:11px;padding:1px 7px;border-radius:11px;background:var(--tint);color:var(--navy2);border:1px solid var(--line)}
-.muted{color:var(--sub);font-size:12.5px;margin-bottom:8px}.hide{display:none}
-.pager{display:flex;justify-content:center;align-items:center;gap:6px;margin-top:12px;flex-wrap:wrap}
-.pager button{background:var(--paper);border:1px solid var(--line);color:var(--navy);border-radius:8px;padding:7px 12px;font-weight:700;cursor:pointer;font-family:inherit;font-size:13px}
+:root{--blue:#1a5cd4;--blue-d:#1148a8;--navy:#102a52;--bg:#eef2f7;--paper:#fff;--ink:#18212e;--sub:#5a6576;--line:#e2e8f1;--tint:#eef5fd;--bd2:#d3e1f4;--ok:#1f7a4d;--hot:#c0392b;--sans:"Pretendard Variable","Pretendard","Malgun Gothic",system-ui,sans-serif;}
+*{box-sizing:border-box}
+body{margin:0;background:var(--bg);color:var(--ink);font-family:var(--sans);font-size:15px;line-height:1.62;font-weight:400;word-break:keep-all;-webkit-font-smoothing:antialiased;text-rendering:optimizeLegibility;font-feature-settings:"tnum","cv11"}
+.wrap{max-width:1140px;margin:0 auto;padding:0 20px}
+.util{background:var(--navy);color:#bccbe0}
+.util .wrap{display:flex;justify-content:flex-end;align-items:center;height:34px;font-size:12px;letter-spacing:-.01em}
+header{background:var(--paper);border-bottom:1px solid var(--line)}
+header .wrap{display:flex;align-items:center;gap:16px;padding:16px 20px}
+.brand{font-size:22px;font-weight:800;letter-spacing:-.035em;color:var(--navy);line-height:1.15;white-space:nowrap}
+.brand b{color:var(--blue)}
+.brand small{display:block;font-size:11.5px;font-weight:500;color:var(--sub);letter-spacing:-.01em;margin-top:2px}
+.chips{display:flex;gap:8px;flex-wrap:wrap;margin-left:auto}
+.chip{background:#fff;border:1px solid var(--line);border-radius:10px;padding:7px 13px;font-size:12.5px;color:var(--sub);box-shadow:0 1px 2px rgba(16,42,82,.05)}
+.chip b{font-weight:800;font-size:15.5px;color:var(--navy);margin-right:5px;letter-spacing:-.03em}
+nav{display:flex;gap:2px;background:var(--paper);border:1px solid var(--line);border-radius:12px;padding:5px;margin:18px 0 16px;position:sticky;top:8px;z-index:10;box-shadow:0 1px 3px rgba(16,42,82,.05);overflow-x:auto}
+nav button{flex:1 0 auto;border:0;background:transparent;padding:9px 14px;border-radius:8px;font-family:inherit;font-size:14px;font-weight:600;color:var(--sub);cursor:pointer;white-space:nowrap;transition:.12s}
+nav button:hover{background:var(--tint);color:var(--blue)}
+nav button.on{background:var(--blue);color:#fff}
+#app{padding-bottom:72px}
+.card{background:var(--paper);border:1px solid var(--line);border-radius:14px;padding:20px 22px;margin-bottom:16px;box-shadow:0 1px 3px rgba(16,42,82,.04)}
+.card h2{margin:0 0 14px;font-size:18px;color:var(--navy);font-weight:800;letter-spacing:-.025em}
+.card h2 small,h2 .muted{font-weight:500;font-size:12.5px;color:var(--sub);letter-spacing:-.01em}
+.row{display:flex;gap:8px;flex-wrap:wrap;margin-bottom:12px;align-items:center}
+input{font-family:inherit;font-size:14.5px;padding:11px 13px;border:1px solid var(--line);border-radius:10px;background:#fff;flex:1;min-width:160px;color:var(--ink)}
+select{font-family:inherit;font-size:14px;padding:10px 12px;border:1px solid var(--line);border-radius:10px;background:#fff;color:var(--ink)}
+input:focus,select:focus{outline:none;border-color:var(--blue);box-shadow:0 0 0 3px rgba(26,92,212,.13)}
+button.go{background:var(--blue);color:#fff;border:0;border-radius:10px;padding:10px 16px;font-weight:700;cursor:pointer;font-family:inherit;font-size:14px;transition:.12s}
+button.go:hover{background:var(--blue-d)}
+button.gh{background:var(--navy)}
+table{width:100%;border-collapse:collapse;font-size:13.5px}
+th,td{text-align:left;padding:10px 11px;border-bottom:1px solid var(--line);vertical-align:middle}
+th{color:var(--sub);font-size:12px;font-weight:700;background:var(--tint);border-bottom:2px solid var(--bd2);white-space:nowrap}
+tbody tr:hover{background:#f6faff}
+.num{text-align:right;font-variant-numeric:tabular-nums}
+.tag{display:inline-block;font-size:11.5px;padding:2px 8px;border-radius:20px;background:var(--tint);color:var(--blue-d);border:1px solid var(--bd2);font-weight:600}
+.muted{color:var(--sub);font-size:13px;margin-bottom:10px;letter-spacing:-.01em}.hide{display:none}
+.pager{display:flex;justify-content:center;align-items:center;gap:8px;margin-top:14px;flex-wrap:wrap}
+.pager button{background:var(--paper);border:1px solid var(--line);color:var(--navy);border-radius:9px;padding:8px 14px;font-weight:700;cursor:pointer;font-family:inherit;font-size:13.5px}
+.pager button:hover:not(:disabled){border-color:var(--blue);color:var(--blue)}
 .pager button:disabled{opacity:.4;cursor:default}
-.pager .pg{font-size:13px;color:var(--sub);margin:0 6px}
-#loading{text-align:center;padding:40px;color:var(--sub)}
-.diag{background:var(--tint);padding:8px 10px;border-radius:8px}
+.pager .pg{font-size:13.5px;color:var(--sub);margin:0 8px;font-weight:600}
+#loading{text-align:center;padding:64px;color:var(--sub)}
+.diag{background:var(--tint);padding:10px 12px;border-radius:10px;border:1px solid var(--bd2)}
+a.ext{color:var(--blue);text-decoration:none;font-weight:600}a.ext:hover{text-decoration:underline}
+@media(max-width:700px){header .wrap{flex-direction:column;align-items:flex-start;gap:10px}.chips{margin-left:0}.brand{font-size:20px}}
 </style>
 </head>
 <body>
+<div class="util"><div class="wrap">공공데이터 기반 대입 분석 · 라이브 데모</div></div>
 <header><div class="wrap">
-  <h1>입시 인사이트 <small>공공데이터(대교협·전문대협) 기반 · 라이브 데모</small></h1>
+  <div class="brand">입시 <b>인사이트</b><small>공공데이터(대교협·전문대협) 기반 분석 도구</small></div>
   <div class="chips" id="chips"></div>
 </div></header>
 
@@ -53,6 +67,7 @@ tbody tr:nth-child(even){background:#fafbfc}
   <div id="app" class="hide">
   <nav>
     <button data-t="metric" class="on">대학 지표 분석</button>
+    <button data-t="tuition">등록금</button>
     <button data-t="region">지역 분석(취업률)</button>
     <button data-t="jeon">전문대 합격선</button>
     <button data-t="major">학과</button>
@@ -71,6 +86,18 @@ tbody tr:nth-child(even){background:#fafbfc}
     <div id="m_agg" class="muted"></div>
     <div style="max-width:680px;height:420px;margin:6px auto 16px"><canvas id="m_chart"></canvas></div>
     <div id="metric_res"></div>
+  </div></section>
+
+  <section id="tuition" class="hide"><div class="card">
+    <h2>등록금 <span class="muted">전국 대학 학부 평균 등록금 · 2026 (학생·학부모 핵심)</span></h2>
+    <div class="row">
+      <select id="t_estb" onchange="renderTuition()" style="flex:0 1 140px"><option value="">설립 전체</option><option value="국공립">국공립</option><option value="사립">사립</option></select>
+      <select id="t_ord" onchange="renderTuition()" style="flex:0 1 130px"><option value="desc">비싼 순</option><option value="asc">싼 순</option></select>
+      <input type="text" id="tuition_q" placeholder="🔎 대학·지역 필터">
+    </div>
+    <div id="t_agg" class="muted"></div>
+    <div style="max-width:680px;height:420px;margin:6px auto 16px"><canvas id="t_chart"></canvas></div>
+    <div id="tuition_res"></div>
   </div></section>
 
   <section id="region" class="hide"><div class="card">
@@ -113,7 +140,7 @@ tbody tr:nth-child(even){background:#fafbfc}
 
 <script>
 const $=s=>document.querySelector(s);
-let UNIV=[],RATE=[],MAJOR=[],JEON=[],METRIC=[],REGION=[],STAT={};
+let UNIV=[],RATE=[],MAJOR=[],JEON=[],METRIC=[],REGION=[],TUITION=[],STAT={};
 const PAGE=50, BOARDS={};
 const grade=v=>(!v||v==='0')?'<span class="muted" style="margin:0">미공개</span>':v;
 const td=c=>'<td>'+c+'</td>';
@@ -137,18 +164,21 @@ function makeBoard(id, all, head, rowFn, filtFn){
   b.render(); return b;
 }
 
-Promise.all(['univ','rate','major','jeon','metric','region','stat'].map(n=>fetch('data/'+n+'.json').then(r=>r.json())))
- .then(function(a){UNIV=a[0];RATE=a[1];MAJOR=a[2];JEON=a[3];METRIC=a[4];REGION=a[5];STAT=a[6];init();})
+Promise.all(['univ','rate','major','jeon','metric','region','tuition','stat'].map(n=>fetch('data/'+n+'.json').then(r=>r.json())))
+ .then(function(a){UNIV=a[0];RATE=a[1];MAJOR=a[2];JEON=a[3];METRIC=a[4];REGION=a[5];TUITION=a[6];STAT=a[7];init();})
  .catch(function(e){$('#loading').innerHTML='데이터 로드 실패: '+e;});
 
 function init(){
   $('#loading').classList.add('hide');$('#app').classList.remove('hide');
-  $('#chips').innerHTML=[['대학',STAT.univ],['학과',(STAT.major||0).toLocaleString()],['대학 경쟁률',STAT.rate],['전문대 합격선',(STAT.jeon||0).toLocaleString()]]
+  const tv=TUITION.map(function(r){return parseFloat(r.reg);}).filter(function(v){return !isNaN(v)&&v>0;});
+  const tavg=tv.length?Math.round(tv.reduce(function(a,b){return a+b;},0)/tv.length/10000):0;
+  $('#chips').innerHTML=[['대학',STAT.univ],['학과',(STAT.major||0).toLocaleString()],['전문대 합격선',(STAT.jeon||0).toLocaleString()],['평균 등록금',tavg+'만원']]
     .map(function(x){return '<span class="chip"><b>'+x[1]+'</b> '+x[0]+'</span>';}).join('');
   document.querySelectorAll('nav button').forEach(function(btn){btn.onclick=function(){
     document.querySelectorAll('nav button').forEach(function(x){x.classList.toggle('on',x===btn);});
-    ['metric','region','jeon','major','rate','about'].forEach(function(id){$('#'+id).classList.toggle('hide',id!==btn.dataset.t);});
-    if(btn.dataset.t==='region'&&!window._rgLoaded){window._rgLoaded=1;renderRegion();}};});
+    ['metric','tuition','region','jeon','major','rate','about'].forEach(function(id){$('#'+id).classList.toggle('hide',id!==btn.dataset.t);});
+    if(btn.dataset.t==='region'&&!window._rgLoaded){window._rgLoaded=1;renderRegion();}
+    if(btn.dataset.t==='tuition'&&!window._tLoaded){window._tLoaded=1;renderTuition();}};});
   renderMetric();
   // 게시판 3종
   makeBoard('jeon', JEON, ['연도','대학','학과','모집','전형','경쟁률','평균(학생부)','최저(학생부)','평균(수능)','최저(수능)'],
@@ -167,8 +197,25 @@ function init(){
     function(r,q){return r.name.indexOf(q)>=0;});
 }
 
-let mchart=null, rgchart=null;
+let mchart=null, rgchart=null, tchart=null;
 const M_LABEL={'신입생충원율':'신입생 충원율','입학전형최종등록률':'입학전형 최종등록률','중도탈락현황':'중도탈락률'};
+function won(n){return n>=10000?Math.round(n/10000).toLocaleString()+'만원':Math.round(n).toLocaleString()+'원';}
+function renderTuition(){
+  const estb=$('#t_estb').value, ord=$('#t_ord').value;
+  let list=TUITION.map(function(r){return {univ:r.univ,zone:r.zone,estb:r.estb,hmpg:r.hmpg,val:parseFloat(r.reg)};}).filter(function(r){return !isNaN(r.val)&&r.val>0;});
+  if(estb)list=list.filter(function(r){return estbGroup(r.estb)===estb;});
+  const avg=function(a){return a.length?a.reduce(function(x,y){return x+y;},0)/a.length:0;};
+  const zg={};list.forEach(function(r){(zg[r.zone]=zg[r.zone]||[]).push(r.val);});
+  let zoneAvg=Object.keys(zg).map(function(k){return {k:k,avg:avg(zg[k])};}).sort(function(a,b){return b.avg-a.avg;});
+  const eg={국공립:[],사립:[]};TUITION.forEach(function(r){const v=parseFloat(r.reg);if(!isNaN(v)&&v>0)eg[estbGroup(r.estb)].push(v);});
+  $('#t_agg').innerHTML='전국 학부 평균 <b>'+won(avg(list.map(function(r){return r.val;})))+'</b> · 국공립 <b style="color:#1f7a4d">'+won(avg(eg.국공립))+'</b> · 사립 <b style="color:#c0392b">'+won(avg(eg.사립))+'</b> · '+list.length+'개 대학';
+  if(tchart)tchart.destroy();
+  tchart=new Chart($('#t_chart'),{type:'bar',data:{labels:zoneAvg.map(function(z){return z.k;}),datasets:[{label:'평균 등록금(만원)',data:zoneAvg.map(function(z){return Math.round(z.avg/10000);}),backgroundColor:'#1a5cd4'}]},options:{indexAxis:'y',responsive:true,maintainAspectRatio:false,plugins:{legend:{display:false},title:{display:true,text:'지역별 평균 등록금(만원)'}},scales:{x:{beginAtZero:true}}}});
+  list.sort(function(a,b){return ord==='asc'?a.val-b.val:b.val-a.val;});
+  makeBoard('tuition', list, ['대학','지역','설립','평균 등록금','홈페이지'],
+    function(r){return [r.univ,r.zone,'<span class="tag">'+r.estb+'</span>','<b>'+won(r.val)+'</b>',r.hmpg?'<a class="ext" href="'+r.hmpg+'" target="_blank" rel="noopener">바로가기</a>':'<span class="muted" style="margin:0">-</span>'];},
+    function(r,q){return r.univ.indexOf(q)>=0||r.zone.indexOf(q)>=0;});
+}
 function estbGroup(e){return (e&&(e.indexOf('국')>=0||e.indexOf('공')>=0))?'국공립':'사립';}
 function avgOf(a){return a.length?a.reduce(function(x,y){return x+y;},0)/a.length:0;}
 
