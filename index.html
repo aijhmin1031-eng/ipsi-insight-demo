@@ -40,6 +40,8 @@ button.gh{background:var(--navy)}
 table{width:100%;border-collapse:collapse;font-size:13.5px}
 th,td{text-align:left;padding:10px 11px;border-bottom:1px solid var(--line);vertical-align:middle}
 th{color:var(--sub);font-size:12px;font-weight:700;background:var(--tint);border-bottom:2px solid var(--bd2);white-space:nowrap}
+th.sortable{cursor:pointer;user-select:none;-webkit-user-select:none;transition:.1s}
+th.sortable:hover{color:var(--blue);background:#e3eefb}
 tbody tr:hover{background:#f6faff}
 .num{text-align:right;font-variant-numeric:tabular-nums}
 .tag{display:inline-block;font-size:11.5px;padding:2px 8px;border-radius:20px;background:var(--tint);color:var(--blue-d);border:1px solid var(--bd2);font-weight:600}
@@ -249,19 +251,50 @@ document.addEventListener('click',function(e){
 });
 document.addEventListener('keydown',function(e){if(e.key==='Escape')closeDrawer();});
 
+// 셀 HTML → {t:텍스트(태그제거), n:정렬용 숫자|null}. 만원→원 환산, ▲/▼·"장학>등록"(음수 실부담) 부호 처리.
+function sv(html){
+  const t=String(html).replace(/<[^>]*>/g,'').replace(/\s+/g,' ').trim();
+  if(t===''||t==='-'||t==='미공개')return {t:t, n:null};
+  const m=t.replace(/,/g,'').match(/-?\d+(?:\.\d+)?/);
+  let n=m?parseFloat(m[0]):null;
+  if(n!==null){
+    if(t.indexOf('만원')>=0)n*=10000;
+    if(t.indexOf('▼')>=0||(t.indexOf('장학')>=0&&t.indexOf('등록')>=0))n=-Math.abs(n);
+    else if(t.indexOf('▲')>=0)n=Math.abs(n);
+  }
+  return {t:t, n:n};
+}
 function makeBoard(id, all, head, rowFn, filtFn){
-  const b={all:all, page:1, q:'', data:all};
+  const b={all:all, page:1, q:'', data:all.slice(), sc:-1, sd:1};
+  b.applySort=function(){
+    if(b.sc<0)return;
+    const i=b.sc, vals=b.data.map(function(r){return sv(rowFn(r)[i]);});
+    const numeric=vals.some(function(v){return v.n!==null;})&&vals.every(function(v){return v.n!==null||v.t===''||v.t==='-'||v.t==='미공개';});
+    const idx=b.data.map(function(_,k){return k;});
+    idx.sort(function(a,c){
+      const va=vals[a], vc=vals[c]; let cmp;
+      if(numeric){
+        if(va.n===null&&vc.n===null)cmp=0;
+        else if(va.n===null)return 1;          // 미공개/-는 방향 무관 항상 아래로
+        else if(vc.n===null)return -1;
+        else cmp=va.n-vc.n;
+      }else cmp=va.t.localeCompare(vc.t,'ko');
+      return cmp!==0?cmp*b.sd:a-c;             // 동률은 원래 순서 유지(stable)
+    });
+    b.data=idx.map(function(k){return b.data[k];});
+  };
+  b.sort=function(i){ if(b.sc===i)b.sd=-b.sd; else {b.sc=i; b.sd=1;} b.applySort(); b.page=1; b.render(); };
   b.render=function(){
     const tot=b.data.length, pages=Math.max(1, Math.ceil(tot/PAGE));
     if(b.page>pages)b.page=pages; if(b.page<1)b.page=1;
     const sl=b.data.slice((b.page-1)*PAGE, b.page*PAGE);
-    let h='<div class="muted">총 <b>'+tot.toLocaleString()+'</b>건'+(b.q?(' · 필터 "'+b.q+'"'):'')+'</div>';
-    h+='<div style="overflow:auto"><table><tr>'+head.map(x=>'<th>'+x+'</th>').join('')+'</tr>'+sl.map(r=>'<tr>'+rowFn(r).map(td).join('')+'</tr>').join('')+'</table></div>';
+    let h='<div class="muted">총 <b>'+tot.toLocaleString()+'</b>건'+(b.q?(' · 필터 "'+b.q+'"'):'')+' · <span style="font-size:12px">머리글 클릭 시 정렬</span></div>';
+    h+='<div style="overflow:auto"><table><tr>'+head.map(function(x,i){var ar=b.sc===i?(b.sd>0?' ▲':' ▼'):'';return '<th class="sortable" onclick="BOARDS.'+id+'.sort('+i+')" title="클릭하여 정렬">'+x+ar+'</th>';}).join('')+'</tr>'+sl.map(r=>'<tr>'+rowFn(r).map(td).join('')+'</tr>').join('')+'</table></div>';
     h+='<div class="pager"><button onclick="BOARDS.'+id+'.go(-1)"'+(b.page<=1?' disabled':'')+'>◀ 이전</button><span class="pg">'+b.page+' / '+pages+'</span><button onclick="BOARDS.'+id+'.go(1)"'+(b.page>=pages?' disabled':'')+'>다음 ▶</button></div>';
     $('#'+id+'_res').innerHTML=h;
   };
   b.go=function(d){b.page+=d; b.render(); window.scrollTo(0,0);};
-  b.filter=function(q){b.q=q; b.data=q?all.filter(function(r){return filtFn(r,q);}):all; b.page=1; b.render();};
+  b.filter=function(q){b.q=q; b.data=q?all.filter(function(r){return filtFn(r,q);}):all.slice(); b.applySort(); b.page=1; b.render();};
   BOARDS[id]=b;
   const inp=$('#'+id+'_q'); let t;
   if(inp) inp.oninput=function(){clearTimeout(t); t=setTimeout(function(){b.filter(inp.value.trim());},180);};
